@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stealth Addresses Introduction</title>
+    <style>
+    body {
+  font-family: Arial, sans-serif;
+  color: #333;
+  background-color: #f8f8f8;
+}
+
+header {
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+
+
+</style>
+  </head>
+  <body>
+    <header>
+      <h1>Stealth Addresses - EIP-5564</h1>
+    </header>
+    <main>
+      <section id="introduction">
+        <h2>Introduction</h2>
+        <p>Stealth addresses are a way of protecting the privacy of recipients in cryptocurrency transactions. They allow a sender to non-interactively generate a new address for the recipient, making it look like as if the sender interacted with some random account.</p>
+        <p>In this tutorial, we'll explore the basics of stealth addresses and how they work. We'll also create interactive examples that demonstrate their use. The following is based on EIP-5564 which defines a stealth address standardization that can help stealth addresses to gain broad usage.</p>
+      </section>
+      <section id="example">
+        <h2>How to receive stealth transactions?</h2>
+        <div>
+        <p>In order to signal your ability to receive stealth transactions, you need a <span style="font-weight: bold;">stealth meta-address</span>. <br>The stealth meta-address consitsts of <span style="font-weight: bold;">two different public keys</span> (that can be compressed to 65 bytes),
+        the <span style="font-weight: bold;">spending</span> and the <span style="font-weight: bold;">viewing public key</span>,
+        which are used by senders to send funds to the stealth address of the respective user.</p>
+        <ul>
+        <li>The stealth meta-address can be publicly shared and used by others to generate stealth addresses on behalf of the owner.</li>
+        <li>The stealth meta-address does not reveal any information about future stealth addresses that are generated on behalf of the owner.</li>
+        <li>The corresponding private keys must be kept private. Only the viewing key can be shared with trusted third parties.</li>
+        </ul>
+        <p><span style="font-weight: bold;">The viewing key secures your privacy while the spending key secures access to funds.<br></span></p>
+        </div>
+        <p>Let's generate an example stealth meta-address</p>
+        <form id="input-form-1">
+          <input style="width:70%;max-width:900px;" type="text" id="stealthmetaoutput">
+          <button type="submit">Generate</button>
+        </form>
+        <p>Essentially, the stealth meta-address is just the same as 2 standard Ethereum addresses combined.<br>
+          The prefix `st:eth:` tells us that this is a stealth meta-address used on the Ethereum mainnet.</p>
+        <p id="pstealthmetaaddressinfo" style="display:none;">And these are the spending and viewing private keys, that map to the public keys encoded in the stealth meta-address:</p>
+        <textarea id="stealthmetaaddressinfo" rows="2" style="width:70%;max-width:900px;display:none"></textarea>
+        <p id="pstealthmetaaddressinfo2" style="display:none;">The private keys must be kept secret because they are used to find and access one's own stealth addresses.</p>
+
+
+
+      </section>
+      <br>
+      <hr>
+      <br>
+      <section id="example">
+        <h2>How to send to a stealth meta-address?</h2>
+        <div>
+        <p>In order to send fund to someone's stealth address you need the recipient's <span style="font-weight: bold;">stealth meta-address</span>.
+        Using the stealth meta-address of the recipient, one can derive the information necessary to perform the stealth transaction. </p>
+        <p>Let's go trough a quick example of how the final stealth address is derived. <br>
+          We have Alice, who wants to send funds to the stealth address of Bob.</p>
+        <ul>
+        <li>Alice take the stealth meta-address of Bob and inputs it into some EIP-5564 compatible interface.</li>
+        <li>The interface takes the stealth meta-address, generates a random number and, after some ellipic curve operations, returns the stealth address of the recipient together with a `Beacon`.</li>
+        <li>Alice can then send funds to the derived stealth address and publishes the additional information retrieved. Beacon so that Bob knows that he received some funds to his stealth address.</li>
+        <li>The Beacon is published so that Bob knows that he received some funds to his stealth address. The View Tag will allow Bob to speed up the parsing process to find his stealth address.</li>
+        <li>This can be done in a single transaction.
+        </ul>
+        </div>
+        <p>You can try it out here. Input a stealth meta-address and get all the info necessary to then execute a transaction.</p>
+        <form id="input-form-2">
+          <input style="width:70%;max-width:900px;" placeholder="st:eth:0x..." type="text" id="stealthaddress">
+          <button type="submit">Get Info</button>
+        </form>
+        <textarea id="stealthaddressinfo" rows="3" style="width:70%;max-width:900px;display:none"></textarea>
+        <p>Head over to Etherscan and use the contract on this address to send ETH and publish the Beacon within the same transaction.<br>
+          The contract just forwards any ETH while passing the Beacon to another contract that publishes it.</p>
+      </section>
+      <br>
+      <hr>
+      <br>
+      <section id="example">
+        <h2>How do I know that someone sent to a stealth address that I can access?</h2>
+        <div>
+        <p><span style="font-weight: bold;">Parsing.</span> You have to go trough all Beacons and check if the respecitive Beacon,
+          applied to your viewing private key, can unlock a valid stealth address.<br>
+
+      While the <span style="font-weight: bold;">viewing private key</span> is used to find your stealth address,
+      the <span style="font-weight: bold;">spending private key</span> is used to access those funds.<br>
+      Therefore, the <span style="font-weight: bold;">viewing private key</span> can be given to a trusted parsing-provider that takes over the pasing job.<br>
+          Finally, if successfully, the parsing provider returns the Beacon that can then be used, together with the spending private key, to access the stealth address.</p>
+        </div>
+        <p>You can try it out here. Input your spending public key and your viewing private key and let the service start parsing.</p>
+        <form id="input-form-3">
+          <input style="width:70%;max-width:900px;" placeholder="0x... (spending public key)" type="text" id="spendpub">
+          <input style="width:70%;max-width:900px;" placeholder="0x... (viewing private key)" type="text" id="viewpriv">
+          <button type="submit">Parse</button>
+        </form>
+        <p>Essentially, the stealth meta-address is just the same as 2 standard Ethereum addresses combined.<br>
+          The prefix `st:eth:` tells us that this is a stealth meta-address used on the Ethereum mainnet.</p>
+          <textarea id="stealthaddressinfo" rows="3" style="width:70%;max-width:900px;display:none;"></textarea>
+
+      </section>
+      <section id="faq">
+        <h2>FAQ</h2>
+        <dl>
+          <dt>What is a stealth address?</dt>
+          <dd>A stealth address is a type of cryptocurrency address that can be generated for each transaction. It allows the recipient to keep their address private and protect their anonymity.</dd>
+          <dt>How does a stealth address work?</dt>
+          <dd>A stealth address is generated from the recipient's public key and a random number. The sender uses this address to send the transaction to the recipient, but only the recipient can access the funds.</dd>
+        </dl>
+      </section>
+      <section id="resources">
+        <h2>Resources</h2>
+        <ul>
+          <li><a href="https://en.wikipedia.org/wiki/Stealth_address">Wikipedia: Stealth Address</a></li>
+          <li><a href="https://github.com/monero-project/research-lab/blob/master/whitepaper/whitepaper.pdf">Monero Research Lab Whitepaper</a></li>
+        </ul>
+      </section>
+    </main>
+    <footer>
+      <p>Copyright © 2023</p>
+    </footer>
+    <script src="bundle.js", type="text/javascript"></script>
+    <script>
+      window.addEventListener("load", (event) => {
+        document.querySelector('#input-form-1').addEventListener('submit', function(e) {
+          e.preventDefault();
+          console.log("-");
+          var outputField = document.querySelector('#stealthmetaaddressinfo');
+          var outputFieldText = document.querySelector('#pstealthmetaaddressinfo');
+          var outputFieldText2 = document.querySelector('#pstealthmetaaddressinfo2');
+          var inputField = document.querySelector('#stealthmetaoutput');
+          var stealthInfo = generateRandomStealthMetaAddress();
+          console.log(stealthInfo)
+          inputField.value = stealthInfo[2];
+          outputField.style.display = "block";
+          outputFieldText.style.display = "block";
+          outputFieldText2.style.display = "block";
+          outputField.value = "Spending Private Key: " + stealthInfo[0] +
+            "\nViewing Private Key: " + stealthInfo[1];
+
+        });
+        document.querySelector('#input-form-2').addEventListener('submit', function(e) {
+          e.preventDefault();
+          var inputField = document.querySelector('#stealthaddress');
+          var stealthAddressInfo = generateStealthInfo(inputField.value);
+          console.log("-");
+          var outputField = document.querySelector('#stealthaddressinfo');
+          outputField.style.display = "block";
+          outputField.value = "Stealth Address: " + stealthAddressInfo["stealthAddress"] +
+            "\nBeacon: " + stealthAddressInfo["ephemeralPublicKey"] + "\nView Tag: " + stealthAddressInfo["ViewTag"];
+        });
+
+        document.querySelector('#input-form-3').addEventListener('submit', function(e) {
+          e.preventDefault();
+          var spendingPub = document.querySelector('#spendpub');
+          var viewingPriv = document.querySelector('#viewpriv');
+          modal.style.display = "block";
+          const timeout = 30 * 1000; // 30 seconds in milliseconds
+          const controller = new AbortController();
+          const signal = controller.signal;
+
+          setTimeout(() => {
+            controller.abort();
+          }, timeout);
+
+          fetch('http://localhost:5000/parse', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            signal: signal
+          })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(response.statusText);
+              }
+              return response.json();
+            })
+            .then(json => {
+              // Access arrays in the response JSON object
+              console.log(json.array1[0]);
+              for (var i=0; i<json.array1.length;i++) {
+                var announcement = json.array1[i];
+                var viewingPublicKey = document.querySelector('#input-field-2').value;
+                var spendingPrivateKey = document.querySelector('#input-field-3').value;
+                //console.log(announcement);
+                //console.log(viewingPublicKey);
+                //console.log(spendingPrivateKey);
+                var stealthInfo = parseStealthAddresses(announcement[0], announcement[1], viewingPublicKey, spendingPrivateKey);
+                if (stealthInfo === false) {
+                  continue;
+                }
+                var stealthAddress = stealthInfo[0];
+                var ephemeralPublicKey = stealthInfo[1];
+                var hashedSharedSecret = stealthInfo[2];
+                console.log("stealthAddress:", stealthAddress);
+                console.log("ephemeralPublicKey:", ephemeralPublicKey);
+                console.log("hashedSharedSecret:", hashedSharedSecret);
+                var modal = document.getElementById("myModal");
+                document.getElementById("modaltext1").innerHTML = "Stealth Address: " + stealthAddress;
+                document.getElementById("modaltext2").innerHTML = "Ephemeral Public Key: " + ephemeralPublicKey;
+                document.getElementById("modaltext3").innerHTML = "Hashed Shared Secret: " + hashedSharedSecret;
+                modal.style.display = "block";
+              }
+            })
+            .catch(error => {
+              if (error.name === 'AbortError') {
+                document.querySelector('#announcement-2').innerHTML = 'Request timed out. Please try again.';
+                console.error('Request timed out');
+              } else {
+                document.querySelector('#announcement-2').innerHTML = 'Request timed out. Please try again.';
+                console.error(error);
+              }
+            });
+        });
+      });
+
+
+      fetch('https://github.com/nerolation/stealth-beacons/main/data.csv')
+      .then(response => response.text())
+      .then(data => {
+        const rows = data.split('\n');
+        const headers = rows[0].split(',');
+        const Beacons = [];
+
+        for (let i = 1; i < rows.length; i++) {
+          const cells = rows[i].split(',');
+          const rowObject = {};
+
+          for (let j = 0; j < headers.length; j++) {
+            rowObject[headers[j]] = cells[j];
+          }
+
+          Beacons.push(rowObject);
+        }
+
+        console.log(Beacons);
+        })
+        .catch(error => console.error(error));
+      </script>
+
+  </body>
+</html>
